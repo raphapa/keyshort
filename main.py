@@ -1,6 +1,6 @@
 import keyboard
 
-version = "v0.2"
+version = "v0.3"
 keyboardextensionstate = False
 def set_keyboard_extension_state():
     global keyboardextensionstate
