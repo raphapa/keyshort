@@ -1,13 +1,21 @@
-comming soon in the new version
-1. Adding keyboard shortcuts
+import numpy as np
 
-Ability to open a window to create a new keyboard shortcut using Ctrl+Alt+K+N
-Create a GitHub repository with Ctrl+Alt+G+H+P (G+H+P = GitHub Project)
-Define a settings window for configuring Git and GitHub accounts
+class avlayer:
+    def __init__(self, nb, func):
+        self.func = func
+        self.biais = np.ones((1, nb))
+        self.poids = np.ones((nb, nb))  # simplification : poids carré
+        self.kwargs = np.ones((1, nb))
 
-2. Code-side features
+    def forward(self, x):
+        z = x @ self.poids + self.biais + self.kwargs
+        return self.func(z)
 
-Develop an installer using the tkinter and os modules
-Set up an optimization system for the user:
-Store new shortcuts in a .keycut file using the format A+C+... : Python function
-When the user presses the "Optimize" button, dynamically integrate these shortcuts into the code
+    def __repr__(self):
+        return f"Layer(biais={self.biais.shape}, poids={self.poids.shape}, kwargs={self.kwargs.shape})"
+
+# Exemple d'utilisation :
+layer = avlayer(nb=3, func=np.tanh)
+x = np.array([[0.5, 0.2, 0.1]])
+out = layer.forward(x)
+print("Sortie :", out)
