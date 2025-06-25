@@ -5,8 +5,11 @@ import subprocess
 import tkinter as tk
 from threading import Thread
 
-version = "v0.4.5"
+version = "v0.5"
 keyboardextensionstate = False
+
+# Liste des raccourcis et fonctions
+func = []
 
 def set_keyboard_extension_state():
     global keyboardextensionstate
@@ -48,35 +51,57 @@ def create_basic_project():
 def open_form():
     def show_form():
         root = tk.Tk()
-        root.title("Keycut Function Form")
+        root.title("Ajouter un raccourci clavier")
 
-        tk.Label(root, text="What keycut:").grid(row=0, column=0, padx=10, pady=5, sticky="e")
-        keycut_entry = tk.Entry(root, width=30)
+        tk.Label(root, text="Raccourci clavier (ex: ctrl+alt+k):").grid(row=0, column=0, padx=10, pady=5, sticky="e")
+        keycut_entry = tk.Entry(root, width=40)
         keycut_entry.grid(row=0, column=1, padx=10, pady=5)
 
-        tk.Label(root, text="What function:").grid(row=1, column=0, padx=10, pady=5, sticky="e")
-        function_entry = tk.Entry(root, width=30)
+        tk.Label(root, text="Code à exécuter (ex: print('Hello')):").grid(row=1, column=0, padx=10, pady=5, sticky="e")
+        function_entry = tk.Entry(root, width=40)
         function_entry.grid(row=1, column=1, padx=10, pady=5)
 
         def submit():
-            print("Keycut:", keycut_entry.get())
-            print("Function:", function_entry.get())
+            keycut = keycut_entry.get()
+            code = function_entry.get()
+
+            # Enregistrement dans .keycut
+            try:
+                with open(".keycut", "a") as file:
+                    file.write("-/-/-/z\n")
+                    file.write(f"{keycut}\n")
+                    file.write(f"{code}\n")
+                print(f"✅ Ajouté dans .keycut : {keycut} → {code}")
+            except Exception as e:
+                print("Erreur d'écriture dans .keycut :", e)
+
+            # Ajout dynamique dans func
+            func.append([keycut, lambda code=code: exec(code)])
+            keyboard.add_hotkey(keycut, func[-1][1])
             root.destroy()
 
-        submit_button = tk.Button(root, text="Submit", command=submit)
-        submit_button.grid(row=2, columnspan=2, pady=10)
-
+        tk.Button(root, text="Ajouter", command=submit).grid(row=2, columnspan=2, pady=10)
         root.mainloop()
 
     Thread(target=show_form).start()
 
 def main():
     print("Démarrage du programme version", version)
-    keyboard.add_hotkey('ctrl+k+x', set_keyboard_extension_state)
-    keyboard.add_hotkey('ctrl+shift+a', action)
-    keyboard.add_hotkey('ctrl+alt+g+p', create_git_project)
-    keyboard.add_hotkey('ctrl+alt+b+p', create_basic_project)
-    keyboard.add_hotkey('ctrl+shift+k', open_form)
+
+    # Raccourcis clavier statiques
+    func.extend([
+        ['ctrl+k+x', set_keyboard_extension_state],
+        ['ctrl+shift+a', action],
+        ['ctrl+alt+g+p', create_git_project],
+        ['ctrl+alt+b+p', create_basic_project],
+        ['ctrl+shift+k', open_form],
+    ])
+
+    # Enregistrement des hotkeys
+    for shortcut, function in func:
+        keyboard.add_hotkey(shortcut, function)
+
+    # Sortie rapide
     keyboard.add_hotkey('esc', lambda: exit())
 
     while True:
